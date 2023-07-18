@@ -25,12 +25,19 @@ function createUser(req, res) {
 
 function getUserById(req, res) {
   const { userId } = req.params;
+  if (!mongoose.isValidObjectId(userId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+  }
+
   User.findById(userId)
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(user);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'CastError':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
@@ -44,6 +51,10 @@ function getUserById(req, res) {
 function updateProfile(req, res) {
   const userId = req.user._id;
   const { name, about } = req.body;
+  if (!mongoose.isValidObjectId(userId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+  }
+
   User.findByIdAndUpdate(
     userId,
     {
@@ -55,11 +66,14 @@ function updateProfile(req, res) {
       runValidators: true,
     },
   )
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(user);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
@@ -76,6 +90,10 @@ function updateProfile(req, res) {
 function updateAvatar(req, res) {
   const userId = req.user._id;
   const { avatar } = req.body;
+  if (!mongoose.isValidObjectId(userId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+  }
+
   User.findByIdAndUpdate(
     userId,
     {
@@ -86,11 +104,14 @@ function updateAvatar(req, res) {
       runValidators: true,
     },
   )
-    .then((user) => res.send(user))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((user) => {
+      if (!user) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(user);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });

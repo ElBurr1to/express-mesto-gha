@@ -28,13 +28,21 @@ function createCard(req, res) {
 
 function deleteCard(req, res) {
   const { cardId } = req.params;
+  if (!mongoose.isValidObjectId(cardId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+    return;
+  }
+
   Card.findByIdAndRemove(cardId)
     .populate('owner')
-    .then((card) => res.send(card))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(cardId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(card);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'CastError':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
@@ -48,6 +56,9 @@ function deleteCard(req, res) {
 function likeCard(req, res) {
   const { cardId } = req.params;
   const userId = req.user._id;
+  if (!mongoose.isValidObjectId(cardId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+  }
 
   Card.findByIdAndUpdate(
     cardId,
@@ -59,11 +70,14 @@ function likeCard(req, res) {
       runValidators: true,
     },
   )
-    .then((card) => res.send(card))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(cardId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(card);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при постановке лайка' });
@@ -80,6 +94,9 @@ function likeCard(req, res) {
 function dislikeCard(req, res) {
   const { cardId } = req.params;
   const userId = req.user._id;
+  if (!mongoose.isValidObjectId(cardId)) {
+    res.status(400).send({ message: 'Некорректный Id' });
+  }
 
   Card.findByIdAndUpdate(
     cardId,
@@ -91,11 +108,14 @@ function dislikeCard(req, res) {
       runValidators: true,
     },
   )
-    .then((card) => res.send(card))
-    .catch((err) => {
-      if (!mongoose.isValidObjectId(cardId)) {
-        res.status(400).send({ message: 'Некорректный Id' });
+    .then((card) => {
+      if (!card) {
+        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
+        return;
       }
+      res.send(card);
+    })
+    .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при снятии лайка' });
