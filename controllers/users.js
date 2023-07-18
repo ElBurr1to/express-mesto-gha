@@ -11,7 +11,7 @@ function createUser(req, res) {
   const { name, about, avatar } = req.body;
 
   User.create({ name, about, avatar })
-    .then((user) => res.send(user))
+    .then((user) => res.status(201).send(user))
     .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
@@ -30,16 +30,13 @@ function getUserById(req, res) {
   }
 
   User.findById(userId)
+    .orFail(new Error('IdNotFound'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(user);
     })
     .catch((err) => {
       switch (err.name) {
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:
@@ -66,11 +63,8 @@ function updateProfile(req, res) {
       runValidators: true,
     },
   )
+    .orFail(new Error('IdNotFound'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(user);
     })
     .catch((err) => {
@@ -78,7 +72,7 @@ function updateProfile(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
           break;
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:
@@ -104,11 +98,8 @@ function updateAvatar(req, res) {
       runValidators: true,
     },
   )
+    .orFail(new Error('IdNotFound'))
     .then((user) => {
-      if (!user) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(user);
     })
     .catch((err) => {
@@ -116,7 +107,7 @@ function updateAvatar(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
           break;
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:

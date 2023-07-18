@@ -14,7 +14,7 @@ function createCard(req, res) {
 
   Card.create({ name, link, owner })
     .then((card) => card.populate('owner'))
-    .then((card) => res.send(card))
+    .then((card) => res.status(201).send(card))
     .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
@@ -34,17 +34,14 @@ function deleteCard(req, res) {
   }
 
   Card.findByIdAndRemove(cardId)
+    .orFail(new Error('IdNotFound'))
     .populate('owner')
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(card);
     })
     .catch((err) => {
       switch (err.name) {
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
@@ -70,11 +67,8 @@ function likeCard(req, res) {
       runValidators: true,
     },
   )
+    .orFail(new Error('IdNotFound'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(card);
     })
     .catch((err) => {
@@ -82,7 +76,7 @@ function likeCard(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при постановке лайка' });
           break;
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
@@ -108,11 +102,8 @@ function dislikeCard(req, res) {
       runValidators: true,
     },
   )
+    .orFail(new Error('IdNotFound'))
     .then((card) => {
-      if (!card) {
-        res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-        return;
-      }
       res.send(card);
     })
     .catch((err) => {
@@ -120,7 +111,7 @@ function dislikeCard(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при снятии лайка' });
           break;
-        case 'CastError':
+        case 'IdNotFound':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
