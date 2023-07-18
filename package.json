@@ -6,8 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npx eslint .",
-    "dev": "cross-env PORT=3000 nodemon index.js",
-    "start": "cross-env PORT=3000 node index.js"
+    "dev": "cross-env PORT=3000 nodemon app.js",
+    "start": "cross-env PORT=3000 node app.js"
   },
   "keywords": [],
   "author": "Сергей Столярчук",
