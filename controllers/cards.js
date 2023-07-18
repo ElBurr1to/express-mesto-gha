@@ -32,7 +32,7 @@ function deleteCard(req, res) {
     .populate('owner')
     .then((card) => res.send(card))
     .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
+      if (!mongoose.isValidObjectId(cardId)) {
         res.status(400).send({ message: 'Некорректный Id' });
       }
       switch (err.name) {
@@ -61,7 +61,7 @@ function likeCard(req, res) {
   )
     .then((card) => res.send(card))
     .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
+      if (!mongoose.isValidObjectId(cardId)) {
         res.status(400).send({ message: 'Некорректный Id' });
       }
       switch (err.name) {
@@ -93,7 +93,7 @@ function dislikeCard(req, res) {
   )
     .then((card) => res.send(card))
     .catch((err) => {
-      if (!mongoose.isValidObjectId(userId)) {
+      if (!mongoose.isValidObjectId(cardId)) {
         res.status(400).send({ message: 'Некорректный Id' });
       }
       switch (err.name) {
