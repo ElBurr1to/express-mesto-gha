@@ -17,7 +17,7 @@ function createCard(req, res) {
     .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные создании карточки' });
+          res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
           break;
         default:
           res.status(500).send({ message: 'Произошла ошибка' });

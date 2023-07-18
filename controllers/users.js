@@ -14,7 +14,7 @@ function createUser(req, res) {
     .catch((err) => {
       switch (err.name) {
         case 'ValidationError':
-          res.status(400).send('Переданы некорректные данные присозданиие пользователя');
+          res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
           break;
         default:
           res.status(500).send({ message: 'Произошла ошибка' });
