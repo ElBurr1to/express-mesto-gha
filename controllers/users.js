@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const User = require('../models/user');
 
 function getUsers(req, res) {
@@ -27,6 +28,9 @@ function getUserById(req, res) {
   User.findById(userId)
     .then((user) => res.send(user))
     .catch((err) => {
+      if (!mongoose.isValidObjectId(userId)) {
+        res.status(400).send({ message: 'Некорректный Id' });
+      }
       switch (err.name) {
         case 'CastError':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
@@ -48,10 +52,14 @@ function updateProfile(req, res) {
     },
     {
       new: true,
+      runValidators: true,
     },
   )
     .then((user) => res.send(user))
     .catch((err) => {
+      if (!mongoose.isValidObjectId(userId)) {
+        res.status(400).send({ message: 'Некорректный Id' });
+      }
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
@@ -75,10 +83,14 @@ function updateAvatar(req, res) {
     },
     {
       new: true,
+      runValidators: true,
     },
   )
     .then((user) => res.send(user))
     .catch((err) => {
+      if (!mongoose.isValidObjectId(userId)) {
+        res.status(400).send({ message: 'Некорректный Id' });
+      }
       switch (err.name) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
