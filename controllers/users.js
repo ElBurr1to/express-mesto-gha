@@ -36,7 +36,7 @@ function getUserById(req, res) {
     })
     .catch((err) => {
       switch (err.name) {
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:
@@ -72,7 +72,7 @@ function updateProfile(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
           break;
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:
@@ -107,7 +107,7 @@ function updateAvatar(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
           break;
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Пользователь по указанному id не найден' });
           break;
         default:

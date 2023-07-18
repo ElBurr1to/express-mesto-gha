@@ -41,7 +41,7 @@ function deleteCard(req, res) {
     })
     .catch((err) => {
       switch (err.name) {
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
@@ -76,7 +76,7 @@ function likeCard(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при постановке лайка' });
           break;
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
@@ -111,7 +111,7 @@ function dislikeCard(req, res) {
         case 'ValidationError':
           res.status(400).send({ message: 'Переданы некорректные данные при снятии лайка' });
           break;
-        case 'IdNotFound':
+        case 'Error':
           res.status(404).send({ message: 'Карточка по указанному id не найдена' });
           break;
         default:
