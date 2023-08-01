@@ -31,8 +31,12 @@ function createUser(req, res, next) {
       email,
     }))
     .then((user) => {
-      const { pass, ...rest } = user;
-      res.status(201).send(rest);
+      res.status(201).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      });
     })
     .catch(next);
 }
