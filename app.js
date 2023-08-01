@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { errors } = require('celebrate');
 const usersRouter = require('./routes/users');
 const cardsRouter = require('./routes/cards');
 const signinRouter = require('./routes/signin');
@@ -26,6 +27,7 @@ app.use('/cards', cardsRouter);
 app.use('*', (req, res, next) => {
   next(new NotFoundError('Неправильный путь'));
 });
+app.use(errors());
 app.use(errorHandler);
 
 app.listen(PORT, () => {});
