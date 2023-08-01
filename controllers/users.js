@@ -30,7 +30,10 @@ function createUser(req, res, next) {
       password: hash,
       email,
     }))
-    .then((user) => res.status(201).send(user))
+    .then((user) => {
+      const { pass, ...rest } = user;
+      res.status(201).send(rest);
+    })
     .catch(next);
 }
 
