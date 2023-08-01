@@ -1,60 +1,54 @@
 const mongoose = require('mongoose');
+const AuthorizationError = require('../errors/AuthorizationError');
+const NotFoundError = require('../errors/NotFoundError');
+const ValidationError = require('../errors/ValidationError');
 const Card = require('../models/card');
 
-function getCards(req, res) {
+function getCards(req, res, next) {
   Card.find({})
     .populate('owner')
     .then((cards) => res.send(cards))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 }
 
-function createCard(req, res) {
+function createCard(req, res, next) {
   const { name, link } = req.body;
   const owner = req.user._id;
 
   Card.create({ name, link, owner })
     .then((card) => card.populate('owner'))
     .then((card) => res.status(201).send(card))
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при создании карточки' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function deleteCard(req, res) {
+function deleteCard(req, res, next) {
   const { cardId } = req.params;
+  const { userId } = req.user._id;
+
   if (!mongoose.isValidObjectId(cardId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
-    return;
+    next(new ValidationError('Некорректный Id'));
   }
 
-  Card.findByIdAndRemove(cardId)
-    .orFail(new Error('IdNotFound'))
-    .populate('owner')
+  Card.findById(cardId)
+    .orFail(new NotFoundError('Указанный Id карточки не найден'))
+    .then((card) => {
+      if (!card.owner._id === userId) {
+        throw new AuthorizationError('Невозможно удалить чужую карточку');
+      }
+
+      return Card.findByIdAndRemove(cardId);
+    })
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'Error':
-          res.status(404).send({ message: 'Карточка по указанному id не найдена' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function likeCard(req, res) {
+function likeCard(req, res, next) {
   const { cardId } = req.params;
   const userId = req.user._id;
   if (!mongoose.isValidObjectId(cardId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
+    next(new ValidationError('Некорректный Id'));
   }
 
   Card.findByIdAndUpdate(
@@ -67,29 +61,18 @@ function likeCard(req, res) {
       runValidators: true,
     },
   )
-    .orFail(new Error('IdNotFound'))
+    .orFail(new NotFoundError('Указанный Id карточки не найден'))
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при постановке лайка' });
-          break;
-        case 'Error':
-          res.status(404).send({ message: 'Карточка по указанному id не найдена' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function dislikeCard(req, res) {
+function dislikeCard(req, res, next) {
   const { cardId } = req.params;
   const userId = req.user._id;
   if (!mongoose.isValidObjectId(cardId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
+    next(new ValidationError('Некорректный Id'));
   }
 
   Card.findByIdAndUpdate(
@@ -102,22 +85,11 @@ function dislikeCard(req, res) {
       runValidators: true,
     },
   )
-    .orFail(new Error('IdNotFound'))
+    .orFail(new NotFoundError('Указанный Id карточки не найден'))
     .then((card) => {
       res.send(card);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при снятии лайка' });
-          break;
-        case 'Error':
-          res.status(404).send({ message: 'Карточка по указанному id не найдена' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
 module.exports = {

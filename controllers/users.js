@@ -1,55 +1,58 @@
 const mongoose = require('mongoose');
-const User = require('../models/user');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
-function getUsers(req, res) {
+const User = require('../models/user');
+const ValidationError = require('../errors/ValidationError');
+const NotFoundError = require('../errors/NotFoundError');
+const AuthorizationError = require('../errors/AuthorizationError');
+
+function getUsers(req, res, next) {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .catch(next);
 }
 
-function createUser(req, res) {
-  const { name, about, avatar } = req.body;
+function createUser(req, res, next) {
+  const {
+    name,
+    about,
+    avatar,
+    email,
+    password,
+  } = req.body;
 
-  User.create({ name, about, avatar })
+  bcrypt.hash(password, 10)
+    .then((hash) => User.create({
+      name,
+      about,
+      avatar,
+      password: hash,
+      email,
+    }))
     .then((user) => res.status(201).send(user))
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function getUserById(req, res) {
-  const { userId } = req.params;
+function getUserById(req, res, next) {
+  const { userId } = req.user._id;
   if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
+    next(new ValidationError('Некорректный Id'));
   }
 
   User.findById(userId)
-    .orFail(new Error('IdNotFound'))
+    .orFail(new NotFoundError('Указанный Id пользователя не найден'))
     .then((user) => {
       res.send(user);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'Error':
-          res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function updateProfile(req, res) {
+function updateProfile(req, res, next) {
   const userId = req.user._id;
   const { name, about } = req.body;
   if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
+    next(new ValidationError('Некорректный Id'));
   }
 
   User.findByIdAndUpdate(
@@ -63,29 +66,18 @@ function updateProfile(req, res) {
       runValidators: true,
     },
   )
-    .orFail(new Error('IdNotFound'))
+    .orFail(new NotFoundError('Указанный Id пользователя не найден'))
     .then((user) => {
       res.send(user);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
-          break;
-        case 'Error':
-          res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
-    });
+    .catch(next);
 }
 
-function updateAvatar(req, res) {
+function updateAvatar(req, res, next) {
   const userId = req.user._id;
   const { avatar } = req.body;
   if (!mongoose.isValidObjectId(userId)) {
-    res.status(400).send({ message: 'Некорректный Id' });
+    next(new ValidationError('Некорректный Id'));
   }
 
   User.findByIdAndUpdate(
@@ -98,21 +90,32 @@ function updateAvatar(req, res) {
       runValidators: true,
     },
   )
-    .orFail(new Error('IdNotFound'))
+    .orFail(new NotFoundError('Указанный Id пользователя не найден'))
     .then((user) => {
       res.send(user);
     })
-    .catch((err) => {
-      switch (err.name) {
-        case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-          break;
-        case 'Error':
-          res.status(404).send({ message: 'Пользователь по указанному id не найден' });
-          break;
-        default:
-          res.status(500).send({ message: 'Произошла ошибка' });
-      }
+    .catch(next);
+}
+
+function login(req, res, next) {
+  const { email, password } = req.body;
+  const userId = req.user._id;
+
+  User.findUserByCredentials(email, password)
+    .then(() => {
+      const token = jwt.sign({ _id: userId }, 'key', {
+        expiresIn: '7d',
+      });
+
+      res
+        .cookie('token', token, {
+          maxAge: 3600000 * 24 * 7,
+          httpOnly: true,
+        })
+        .end();
+    })
+    .catch(() => {
+      next(new AuthorizationError('При авторизации произошла ошибка'));
     });
 }
 
@@ -122,4 +125,5 @@ module.exports = {
   getUserById,
   updateProfile,
   updateAvatar,
+  login,
 };
