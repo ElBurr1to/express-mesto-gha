@@ -6,6 +6,7 @@ const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
 const AuthorizationError = require('../errors/AuthorizationError');
+const AlreadyExistsError = require('../errors/AlreadyExistsError');
 
 function getUsers(req, res, next) {
   User.find({})
@@ -21,6 +22,13 @@ function createUser(req, res, next) {
     email,
     password,
   } = req.body;
+
+  User.findOne({ email })
+    .then((user) => {
+      if (user) {
+        next(new AlreadyExistsError('Пользователь с такой почтой уже существует'));
+      }
+    });
 
   bcrypt.hash(password, 10)
     .then((hash) => User.create({
