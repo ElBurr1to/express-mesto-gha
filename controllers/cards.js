@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const AuthorizationError = require('../errors/AuthorizationError');
+const NotAuthorizedError = require('../errors/NotAuthorizedError');
 const NotFoundError = require('../errors/NotFoundError');
 const ValidationError = require('../errors/ValidationError');
 const Card = require('../models/card');
@@ -32,8 +32,8 @@ function deleteCard(req, res, next) {
   Card.findById(cardId)
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
     .then((card) => {
-      if (card.owner !== userId) {
-        throw new AuthorizationError('Невозможно удалить чужую карточку');
+      if (card.owner.valueOf() !== userId) {
+        throw new NotAuthorizedError('Невозможно удалить чужую карточку');
       }
 
       return Card.findByIdAndRemove(cardId);
