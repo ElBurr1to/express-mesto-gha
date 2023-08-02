@@ -36,7 +36,7 @@ function deleteCard(req, res, next) {
         throw new NotAuthorizedError('Невозможно удалить чужую карточку');
       }
     })
-    .findByIdAndRemove()
+    .deleteOne()
     .then((card) => {
       res.send(card);
     })
