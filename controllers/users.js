@@ -5,7 +5,6 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const ValidationError = require('../errors/ValidationError');
 const NotFoundError = require('../errors/NotFoundError');
-const AuthorizationError = require('../errors/AuthorizationError');
 const AlreadyExistsError = require('../errors/AlreadyExistsError');
 
 function getUsers(req, res, next) {
@@ -23,14 +22,7 @@ function createUser(req, res, next) {
     password,
   } = req.body;
 
-  User.findOne({ email })
-    .then((user) => {
-      if (user) {
-        next(new AlreadyExistsError('Пользователь с такой почтой уже существует'));
-      }
-    });
-
-  bcrypt.hash(password, 10)
+  return bcrypt.hash(password, 10)
     .then((hash) => User.create({
       name,
       about,
@@ -46,16 +38,19 @@ function createUser(req, res, next) {
         email: user.email,
       });
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.code === 11000) next(new AlreadyExistsError('Пользователь с таким email уже существует'));
+      else next(err);
+    });
 }
 
 function getUserById(req, res, next) {
   const { userId } = req.params;
   if (!mongoose.isValidObjectId(userId)) {
-    next(new ValidationError('Некорректный Id'));
+    return next(new ValidationError('Некорректный Id'));
   }
 
-  User.findById(userId)
+  return User.findById(userId)
     .orFail(new NotFoundError('Указанный Id пользователя не найден'))
     .then((user) => {
       res.send(user);
@@ -65,11 +60,8 @@ function getUserById(req, res, next) {
 
 function getSelf(req, res, next) {
   const userId = req.user._id;
-  if (!mongoose.isValidObjectId(userId)) {
-    next(new ValidationError('Некорректный Id'));
-  }
 
-  User.findById(userId)
+  return User.findById(userId)
     .orFail(new NotFoundError('Указанный Id пользователя не найден'))
     .then((user) => {
       res.send(user);
@@ -80,9 +72,6 @@ function getSelf(req, res, next) {
 function updateProfile(req, res, next) {
   const userId = req.user._id;
   const { name, about } = req.body;
-  if (!mongoose.isValidObjectId(userId)) {
-    next(new ValidationError('Некорректный Id'));
-  }
 
   User.findByIdAndUpdate(
     userId,
@@ -104,9 +93,6 @@ function updateProfile(req, res, next) {
 function updateAvatar(req, res, next) {
   const userId = req.user._id;
   const { avatar } = req.body;
-  if (!mongoose.isValidObjectId(userId)) {
-    next(new ValidationError('Некорректный Id'));
-  }
 
   User.findByIdAndUpdate(
     userId,
@@ -146,9 +132,7 @@ function login(req, res, next) {
           email: user.email,
         });
     })
-    .catch(() => {
-      next(new AuthorizationError('При авторизации произошла ошибка'));
-    });
+    .catch(next);
 }
 
 module.exports = {
