@@ -35,8 +35,9 @@ function deleteCard(req, res, next) {
       if (card.owner.valueOf() !== userId) {
         throw new NotAuthorizedError('Невозможно удалить чужую карточку');
       }
+
+      card.deleteOne();
     })
-    .deleteOne()
     .then((card) => {
       res.send(card);
     })
