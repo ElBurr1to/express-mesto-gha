@@ -66,7 +66,7 @@ function getUserById(req, res, next) {
 function getSelf(req, res, next) {
   const userId = req.user._id;
   if (!mongoose.isValidObjectId(userId)) {
-    next(new ValidationError(JSON.stringify(req.user)));
+    next(new ValidationError('Некорректный Id'));
   }
 
   User.findById(userId)
