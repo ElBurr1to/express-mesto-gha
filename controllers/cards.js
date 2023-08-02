@@ -35,9 +35,8 @@ function deleteCard(req, res, next) {
       if (card.owner.valueOf() !== userId) {
         throw new NotAuthorizedError('Невозможно удалить чужую карточку');
       }
-
-      return Card.findByIdAndRemove(cardId);
     })
+    .deleteOne()
     .then((card) => {
       res.send(card);
     })
@@ -58,7 +57,6 @@ function likeCard(req, res, next) {
     },
     {
       new: true,
-      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
@@ -82,7 +80,6 @@ function dislikeCard(req, res, next) {
     },
     {
       new: true,
-      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
