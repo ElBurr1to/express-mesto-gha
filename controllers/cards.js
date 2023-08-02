@@ -23,7 +23,7 @@ function createCard(req, res, next) {
 
 function deleteCard(req, res, next) {
   const { cardId } = req.params;
-  const { userId } = req.user._id;
+  const userId = req.user._id;
 
   if (!mongoose.isValidObjectId(cardId)) {
     next(new ValidationError('Некорректный Id'));
