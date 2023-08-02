@@ -39,7 +39,7 @@ function deleteCard(req, res, next) {
       return Card.findByIdAndRemove(cardId);
     })
     .then((card) => {
-      res.send(card);
+      res.send({ userId, owner: card.owner });
     })
     .catch(next);
 }
