@@ -36,10 +36,11 @@ function deleteCard(req, res, next) {
         throw new NotAuthorizedError('Невозможно удалить чужую карточку');
       }
 
-      card.deleteOne();
-    })
-    .then((card) => {
-      res.send(card);
+      card
+        .deleteOne()
+        .then(() => {
+          res.send(card);
+        });
     })
     .catch(next);
 }
