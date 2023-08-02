@@ -50,6 +50,20 @@ function createUser(req, res, next) {
 }
 
 function getUserById(req, res, next) {
+  const { userId } = req.params;
+  if (!mongoose.isValidObjectId(userId)) {
+    next(new ValidationError('Некорректный Id'));
+  }
+
+  User.findById(userId)
+    .orFail(new NotFoundError('Указанный Id пользователя не найден'))
+    .then((user) => {
+      res.send(user);
+    })
+    .catch(next);
+}
+
+function getSelf(req, res, next) {
   const { userId } = req.user._id;
   if (!mongoose.isValidObjectId(userId)) {
     next(new ValidationError('Некорректный Id'));
@@ -146,4 +160,5 @@ module.exports = {
   updateProfile,
   updateAvatar,
   login,
+  getSelf,
 };
