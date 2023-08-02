@@ -57,7 +57,6 @@ function likeCard(req, res, next) {
     },
     {
       new: true,
-      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
@@ -81,7 +80,6 @@ function dislikeCard(req, res, next) {
     },
     {
       new: true,
-      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
