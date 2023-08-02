@@ -126,7 +126,13 @@ function login(req, res, next) {
           maxAge: 3600000 * 24 * 7,
           httpOnly: true,
         })
-        .end();
+        .send({
+          _id: user._id,
+          name: user.name,
+          about: user.about,
+          avatar: user.avatar,
+          email: user.email,
+        });
     })
     .catch(() => {
       next(new AuthorizationError('При авторизации произошла ошибка'));
