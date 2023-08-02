@@ -32,7 +32,7 @@ function deleteCard(req, res, next) {
   Card.findById(cardId)
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
     .then((card) => {
-      if (!card.owner._id === userId) {
+      if (!card.owner === userId) {
         throw new AuthorizationError('Невозможно удалить чужую карточку');
       }
 
