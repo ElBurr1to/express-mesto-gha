@@ -51,7 +51,7 @@ function createUser(req, res, next) {
 
 function getUserById(req, res, next) {
   const { userId } = req.params;
-  if (!mongoose.isValidObjectId(userId)) {
+  if (!mongoose.isValidObjectId(JSON.stringify(userId))) {
     next(new ValidationError('Некорректный Id'));
   }
 
