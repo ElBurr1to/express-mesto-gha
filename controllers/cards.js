@@ -26,10 +26,10 @@ function deleteCard(req, res, next) {
   const userId = req.user._id;
 
   if (!mongoose.isValidObjectId(cardId)) {
-    next(new ValidationError('Некорректный Id'));
+    return next(new ValidationError('Некорректный Id'));
   }
 
-  Card.findById(cardId)
+  return Card.findById(cardId)
     .orFail(new NotFoundError('Указанный Id карточки не найден'))
     .then((card) => {
       if (card.owner.valueOf() !== userId) {
@@ -49,10 +49,10 @@ function likeCard(req, res, next) {
   const { cardId } = req.params;
   const userId = req.user._id;
   if (!mongoose.isValidObjectId(cardId)) {
-    next(new ValidationError('Некорректный Id'));
+    return next(new ValidationError('Некорректный Id'));
   }
 
-  Card.findByIdAndUpdate(
+  return Card.findByIdAndUpdate(
     cardId,
     {
       $addToSet: { likes: userId },
@@ -72,10 +72,10 @@ function dislikeCard(req, res, next) {
   const { cardId } = req.params;
   const userId = req.user._id;
   if (!mongoose.isValidObjectId(cardId)) {
-    next(new ValidationError('Некорректный Id'));
+    return next(new ValidationError('Некорректный Id'));
   }
 
-  Card.findByIdAndUpdate(
+  return Card.findByIdAndUpdate(
     cardId,
     {
       $pull: { likes: userId },

@@ -84,6 +84,7 @@ function updateProfile(req, res, next) {
     },
     {
       new: true,
+      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id пользователя не найден'))
@@ -104,6 +105,7 @@ function updateAvatar(req, res, next) {
     },
     {
       new: true,
+      runValidators: true,
     },
   )
     .orFail(new NotFoundError('Указанный Id пользователя не найден'))
